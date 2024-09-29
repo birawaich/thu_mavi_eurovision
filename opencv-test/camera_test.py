@@ -1,13 +1,13 @@
 # program to capture single image from webcam in python 
 
 # importing OpenCV library 
-from cv2 import *
+from cv2 import VideoCapture, imshow, imwrite, waitKey, destroyWindow
 
 # initialize the camera 
 # If you have multiple camera connected with 
 # current device, assign a value in cam_port 
 # variable according to that 
-cam_port = 0
+cam_port = 1
 cam = VideoCapture(cam_port) 
 
 # reading the input using the camera 
