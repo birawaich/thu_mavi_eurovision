@@ -22,3 +22,8 @@ echo 'export PYTHONPATH="$PWD:$PYTHONPATH"' >> .venv/bin/activate
 source .venv/bin/activate
 pip install -r requirements.txt
 ```
+
+# Resources
+
+[OpenCV Documentation](https://docs.opencv.org/4.10.0/index.html)  
+[OpenCV Python Package](https://pypi.org/project/opencv-python/)

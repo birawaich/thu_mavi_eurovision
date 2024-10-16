@@ -15,3 +15,8 @@ Just a file containing some info about the TurtleBot ;)
 
 - Installation on [Ubuntu](https://docs.ros.org/en/humble/Installation/Ubuntu-Install-Debs.html) (humble)
     - Setup Command (to use `ros2` in the cli with bash): `source /opt/ros/humble/setup.bash`
+ 
+## Create 3
+
+- [Getting Started PDF](file:///home/bstadler/Downloads/Create3-Welcome-Guide-2.pdf)
+- [Documentation](https://iroboteducation.github.io/create3_docs/)
