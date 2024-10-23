@@ -1,4 +1,5 @@
 from irobot_create_msgs.msg import InterfaceButtons, LightringLeds
+from sensor_msgs.msg import BatteryState
 
 import rclpy
 from rclpy.node import Node
@@ -23,17 +24,35 @@ class TurtleBot4FirstNode(Node):
             LightringLeds,
             '/cmd_lightring',
             qos_profile_sensor_data)
+        
+        # Subscribe to the /battery_state topic
+        self.battery_state_subscriber = self.create_subscription(
+            BatteryState,
+            '/battery_state',  # Topic name
+            self.battery_state_callback,
+            10)  # QoS profile (queue size)
 
     # Interface buttons subscription callback
     # check available topics with `ros2 topics list` <-- make sure connected to the right network
     # buttons are /interface_buttons
     # note: wait a few seconds until the callback function registers!
     def interface_buttons_callback(self, create3_buttons_msg: InterfaceButtons):
-        self.get_logger().info('\tbutton callback - I am alive!')
+        # self.get_logger().info('\tbutton callback - I am alive!')
         # Button 1 is pressed
         if create3_buttons_msg.button_1.is_pressed:
             self.get_logger().info('Button 1 Pressed!')
             self.disco()
+
+    def battery_state_callback(self, msg: BatteryState):
+        """callback function for battery state"""
+
+        # Extract the battery percentage and voltage from the message
+        battery_percentage = msg.percentage * 100  # Convert to percentage
+        voltage = msg.voltage
+        
+        # Display the battery state
+        self.get_logger().info(f"Battery Percentage: {battery_percentage:.2f}%")
+        self.get_logger().info(f"Battery Voltage: {voltage:.2f} V")
 
     # disco function from tutorial
     def disco(self):

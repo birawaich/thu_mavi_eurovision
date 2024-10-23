@@ -40,6 +40,7 @@ Drives Sensors --> Lidar, Default Camera
 - SSH into it: `ssh ubuntu@192.168.31.5`
 - Password: `turtlebot4`
 
+# Debug Notes
 
 ## Getting it to run
 
@@ -58,3 +59,28 @@ Drives Sensors --> Lidar, Default Camera
 ### running custom python code
 
 - source the compiled files (in working directory!): `source install/local_setup.bash`
+- have vscode: first source a terminal, then run code from workspace: `code .`
+
+## Battery Investigation
+
+### Observations
+
+- the custom code returns 0V and 0% charged
+- according to the [specifications](https://iroboteducation.github.io/create3_docs/hw/electrical/) this happens if $U<12\text{V}$ --> it switches to a `/robot_power` service, no idea what that service does
+    - note that the button pressing still works, but the LED ring is not always overwritten
+- same output is obtained when subscribing to the topic directly i.e. `ros2 topic echo /battery_state`
+- when running teleop it works for a few seconds/minutes, and then all lights vanish and the sensors stop spinning --> no power
+    - the battery information is still streamed however(?) ~> maybe the create3 hardware is still somehow awake
+
+### Hypothesis
+
+The battery has been stored without charge for a long time and now the battery is dead. The bot can work on power, but since the battery voltage is always low, the robot is always in the weird `/robot_power` service. This leads to the "laggy" behavior.
+
+It also explains all networking issues etc. as the create3 hardware and/or the Pi had been rebooting themselves.
+
+### Next Steps
+
+To check this we can either (1) replace the battery or (2) more elegantly power it directly with some power source or (3) add a unregulated battery to the [cargo bay](https://iroboteducation.github.io/create3_docs/hw/adapter/).
+
+Continuing trying to attempt to develop is pointless as the platform does not behave stable.
+
