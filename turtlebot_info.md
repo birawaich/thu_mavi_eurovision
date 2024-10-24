@@ -84,3 +84,14 @@ To check this we can either (1) replace the battery or (2) more elegantly power 
 
 Continuing trying to attempt to develop is pointless as the platform does not behave stable.
 
+### Solution
+
+- installed spare battery (from TA)
+- works!
+    - when subscribing to `/battery_state` it actually gives a battery state: voltage and percentage
+    - can run teleop and navigate the robot around for quite some time
+    - test code is actually flawed with the message, but the LED lighting works
+- note
+    - is still laggy after booting --> give it some minutes
+    - subscribing to topics also takes some time, also when starting an application (probably due to the Pi relay thing)
+    - still look at "getting it to run" on how to get it all to run
