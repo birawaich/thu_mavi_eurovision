@@ -106,6 +106,13 @@ Investigating can be done by:
     - launch stuff can be run by appending `namespace:=/eurovision` ~> doesn't seem to work, but worked in the past...
     - the teleop by ading `--ros-args --remap __ns:=/eurovision`
 
+
+- noticed that pinging results in loss!
+    - sometimes up to 50% --> can lead to topics not being displayed properly
+    - reseting router helps
+    - also reduced the signal strength from max to power saving. Maybe the pi has issues with it...
+    - maybe ssh ing into the pi forces the connection to remain active?
+
 ## Battery Investigation
 
 ### Observations
