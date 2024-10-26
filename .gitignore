@@ -3,3 +3,4 @@ venv/
 *.png
 *.onnx
 *.pt
+.vscode/

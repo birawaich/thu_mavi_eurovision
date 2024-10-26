@@ -25,15 +25,7 @@ pip install -r requirements.txt
 
 ## Turtlebot setup
 
-Wifi password
-```
-eurovision-router
-turtlebot
-```
-
-Turtlebot4 ssh password
-```
-turtlebot4
+See [TurtleBot Info](./turtlebot_info.md)
 ```
 
 ## Yolo V10 setup
@@ -48,3 +40,9 @@ And then
 ```
 python yolo-test/main.py --model yolov8n.onnx --img image.jpg
 ```
+
+# Resources
+
+[OpenCV Documentation](https://docs.opencv.org/4.10.0/index.html)  
+[OpenCV Python Package](https://pypi.org/project/opencv-python/)
+
