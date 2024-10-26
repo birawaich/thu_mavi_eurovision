@@ -99,6 +99,13 @@ Investigating can be done by:
     - maybe it is a frequency issue --> attempting to only use 2.4GHz --> router only supports 2.4GHz (printed on it), could not get phone hotspot to run (need to change wifi settings on robot?)
     - it **was the authentification** --> set it to `WAP2` ==> works reliably :D
 
+
+- still not working as wanted ==> try out Discovery Server (following [docs](https://turtlebot.github.io/turtlebot4-user-manual/setup/discovery_server.html))
+- works, but the `create3_republisher` does not do its thing? --> added **namespace** `eurovision`
+    - the republisher now boots! (listed in `ros2 node list`)
+    - launch stuff can be run by appending `namespace:=/eurovision` ~> doesn't seem to work, but worked in the past...
+    - the teleop by ading `--ros-args --remap __ns:=/eurovision`
+
 ## Battery Investigation
 
 ### Observations
