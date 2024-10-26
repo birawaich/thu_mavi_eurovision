@@ -23,7 +23,26 @@ source .venv/bin/activate
 pip install -r requirements.txt
 ```
 
+## Turtlebot setup
+
+See [TurtleBot Info](./turtlebot_info.md)
+```
+
+## Yolo V10 setup
+First time running
+```
+pip install ultralytics
+yolo export model=yolov8n.pt imgsz=640 format=onnx opset=12
+pip install -r requirements.txt
+```
+
+And then
+```
+python yolo-test/main.py --model yolov8n.onnx --img image.jpg
+```
+
 # Resources
 
 [OpenCV Documentation](https://docs.opencv.org/4.10.0/index.html)  
 [OpenCV Python Package](https://pypi.org/project/opencv-python/)
+

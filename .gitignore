@@ -1,4 +1,6 @@
 venv/
 .venv
 *.png
+*.onnx
+*.pt
 .vscode/
