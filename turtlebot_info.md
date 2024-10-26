@@ -29,7 +29,7 @@ Has its own ROS nodes!
 
 ## Router
 
-- ssid: `eurovision_router`
+- ssid: `eurovision-router`
 - password: `turtlebot`
 - [web interface](http://192.168.31.1) (enter password in big entry field)
 
@@ -42,7 +42,37 @@ Drives Sensors --> Lidar, Default Camera
 
 # Debug Notes
 
-## Getting it to run
+## Sourcing
+
+**always source** ROS on your PC!
+
+In the repository: `source setup-bash.sh` --> you will see a little `(EuroVision)` in your terminal window.
+
+To launch vscode sourced:
+
+```bash
+source setup-bash.sh
+code .
+```
+
+## Setup
+
+Do the following steps in the order below
+
+1. power router, connect to Tsinghua LAN
+2. connect to router with laptop, ensure that connected to internet (open network login page, insert credentials)
+    - you can connect to a VPN
+3. power up robot by putting it on access point
+    - it will first show solid red (= robot error, cf. [light ring doc](https://iroboteducation.github.io/create3_docs/hw/face/))
+    - eventually it will turn white and play a sound, then turn green = successfully connected to network
+
+Investigating can be done by:
+
+- `ros2 topic echo /battery_state` (takes a minute or so to show output)
+- running diagnostics as recommended in the [docs](https://turtlebot.github.io/turtlebot4-user-manual/troubleshooting/diagnostics.html) did not work! Got error regarding namespace, not sure how to fix this (tried editing the launch file, but did not help. Passing a random namespace does something).
+
+
+## LEGACY Getting it to run 
 
 - ensure router is connected to internet (web interface)
 - ensure raspberry pi has synched RTC
@@ -60,6 +90,14 @@ Drives Sensors --> Lidar, Default Camera
 
 - source the compiled files (in working directory!): `source install/local_setup.bash`
 - have vscode: first source a terminal, then run code from workspace: `code .`
+
+### more things tried
+
+- updating firmware of Create3 wia [webserver](https://iroboteducation.github.io/create3_docs/webserver/connect/) --> now on H.2.6
+- getting sneaky suspicion that it might be a networking issue...
+    - doesn't matter if it is connected to the lan or not
+    - maybe it is a frequency issue --> attempting to only use 2.4GHz --> router only supports 2.4GHz (printed on it), could not get phone hotspot to run (need to change wifi settings on robot?)
+    - it **was the authentification** --> set it to `WAP2` ==> works reliably :D
 
 ## Battery Investigation
 
