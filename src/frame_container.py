@@ -1,17 +1,20 @@
 import datetime
 import cv2
 import numpy as np
+import warnings
 
 class FrameContainer:
     """Class to hold captured frames and their corresponding infos"""
 
     def __init__(self, frame_left, frame_right, timestamp):
-        self.frame_left = frame_left
-        self.frame_right = frame_right
-        self.timestamp: datetime.datetime = timestamp
+        self.frame_left = frame_left #capture frame with left camera
+        self.frame_right = frame_right #captured frame with right camera
+        self.timestamp: datetime.datetime = timestamp #timestamp of frame
+
+        self.matchings = None #matchings
         return
 
-    def get_info_frame(self) -> cv2.Mat:
+    def get_raw_info_frame(self) -> cv2.Mat:
         """returns a combined frame of the two frames with the meta data in it.
         
         for informative and debug purposes"""
@@ -53,3 +56,23 @@ class FrameContainer:
         cv2.putText(frame_combined, f"{timestamp_txt}", text_position, font, font_scale, text_color, thickness, cv2.LINE_AA)
         
         return frame_combined
+    
+    def is_matching_significant(self) -> bool:
+        """Returns whether a container has a significant matching with
+        the target keyword according to its matchings"""
+
+        warnings.warn("TODO implement this function. Right now this is just a dummy function.")
+
+        return True
+    
+
+    def rate_matching(self, keyword: str):
+        """Rates a frame container (if it has object detection) to a matching
+        
+        Directly modifies the frame container (returns same container)"""
+
+        warnings.warn("TODO implement this function. Right now this is just a dummy function.")
+
+        self.matchings = True #NOTE Dummy output, just to have something different than None
+
+        return

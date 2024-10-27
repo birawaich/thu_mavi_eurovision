@@ -21,8 +21,11 @@ def capture_frames(camera_setup: CameraSetup,
                    event_stop: threading.Event=None):
     """Capture Frames and put them into a queue"""
 
-    cap_left = cv2.VideoCapture(camera_setup.port_left)
-    cap_right = cv2.VideoCapture(camera_setup.port_right)
+    # cap_left = cv2.VideoCapture(camera_setup.port_left)
+    # cap_right = cv2.VideoCapture(camera_setup.port_right)
+
+    cap_left = cv2.VideoCapture("/dev/video2")
+    cap_right = cv2.VideoCapture("/dev/video6")
 
     docap_left = True
     docap_right = True
