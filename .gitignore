@@ -4,3 +4,4 @@ venv/
 *.onnx
 *.pt
 .vscode/
+scratch/
