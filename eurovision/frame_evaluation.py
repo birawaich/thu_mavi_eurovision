@@ -5,7 +5,7 @@ import warnings
 from ultralytics import YOLO
 import threading
 
-from src.camera_capture import get_frame_from_queue
+from .camera_capture import get_frame_from_queue
 from src.frame_container import FrameContainer
 
 def evaluate_captured_frames(queue_captured: Queue, #src queue

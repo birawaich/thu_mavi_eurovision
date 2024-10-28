@@ -7,6 +7,7 @@ import threading
 
 from .camera_capture import get_frame_from_queue
 from .frame_container import FrameContainer
+from .frame_container import DetectedObject
 
 def evaluate_captured_frames(queue_captured: Queue, #src queue
                              queue_distance: Queue, #destination queue
@@ -30,6 +31,10 @@ def evaluate_captured_frames(queue_captured: Queue, #src queue
 
         # do object detection
         frame_container = _detect_objects(frame_container, model)
+
+        # debug print
+        # cv2.imshow("Debug: Object Detection",frame_container.get_frame_with_objects_detected())
+        # cv2.waitKey(1000)
 
         # give matching rating
         frame_container.rate_matching(keyword)
@@ -56,32 +61,21 @@ def _detect_objects(container: FrameContainer, model) -> FrameContainer:
 
     results = model(frame_left)
 
-    # Extract detected labels and store them in the tag list
-    tags = [model.names[int(cls)] for cls in results[0].boxes.cls]
-    # tag_list.append(tags)
-    print(f"Detected tags: {tags}")
-
-    # Draw bounding boxes and labels on the left frame
+    # extract detected labels etc and store into FrameContainer
     for box in results[0].boxes:
         x1, y1, x2, y2 = map(int, box.xyxy[0])  # Bounding box coordinates
-        label = model.names[int(box.cls[0])]  # Class label
-        conf = box.conf[0]  # Confidence score
-
-        # Draw a green rectangle and label
-        cv2.rectangle(frame_left, (x1, y1), (x2, y2), (0, 255, 0), 2)
-        text = f"{label} {conf:.2f}"
-
-        # Calculate depth at the center of the bounding box
-        # center_x, center_y = (x1 + x2) // 2, (y1 + y2) // 2
-        # distance = disparity[center_y, center_x]  # Depth value at center
-        # text += f" {distance:.2f} cm"
-
-        # Put the text on the frame
-        cv2.putText(frame_left, text, (x1, y1 - 10), cv2.FONT_HERSHEY_SIMPLEX,
-                    0.5, (0, 255, 0), 2)
-
-    cv2.imshow('Left Camera with YOLO Detections', frame_left)
-    cv2.waitKey(1000)
+        label_id = int(box.cls[0])
+        label = model.names[label_id]  # Class label
+        conf = float(box.conf[0])  # Confidence score
+        container.detected_objects.append(
+            DetectedObject(label_name=label,
+                           label_id=label_id,
+                           confidence=conf,
+                           x1=x1,
+                           x2=x2,
+                           y1=y1,
+                           y2=y2)
+        )
 
     time_end = time.time()
     print(f"[Object Detection] Execution time:\t{time_end - time_start:.6f} s")

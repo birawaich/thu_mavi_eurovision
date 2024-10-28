@@ -1,6 +1,5 @@
 import threading
 from queue import Queue
-import cv2
 
 from src.camera_capture import CameraSetup
 from src.camera_capture import capture_frames

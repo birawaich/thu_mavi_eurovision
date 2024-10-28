@@ -2,6 +2,7 @@ import datetime
 import cv2
 import numpy as np
 import warnings
+from typing import List
 
 class FrameContainer:
     """Class to hold captured frames and their corresponding infos"""
@@ -11,6 +12,7 @@ class FrameContainer:
         self.frame_right = frame_right #captured frame with right camera
         self.timestamp: datetime.datetime = timestamp #timestamp of frame
 
+        self.detected_objects: List[DetectedObject] = []
         self.matchings = None #matchings
         return
 
@@ -57,6 +59,25 @@ class FrameContainer:
         
         return frame_combined
     
+    def get_frame_with_objects_detected(self) -> cv2.Mat:
+        """Add detected objects over a raw frame (if any) and return that"""
+        base = self.get_raw_info_frame()
+
+        for detected_object  in self.detected_objects:
+            cv2.rectangle(base,
+                          (detected_object.x1, detected_object.y1),
+                          (detected_object.x2, detected_object.y2),
+                          (0, 255, 0), 2)
+            text = f"{detected_object.label_name} {detected_object.confidence:.2f}"
+            cv2.putText(base,
+                        text, 
+                        (detected_object.x1, detected_object.y1 - 10),
+                        cv2.FONT_HERSHEY_SIMPLEX,
+                        0.5, (0, 255, 0), 2)
+            
+        return base
+
+    
     def is_matching_significant(self) -> bool:
         """Returns whether a container has a significant matching with
         the target keyword according to its matchings"""
@@ -75,4 +96,24 @@ class FrameContainer:
 
         self.matchings = True #NOTE Dummy output, just to have something different than None
 
+        return
+
+class DetectedObject:
+    """Class Representing a detected object"""
+
+    def __init__(self,
+                 label_name: str,
+                 label_id: int,
+                 confidence: float,
+                 x1,
+                 x2,
+                 y1,
+                 y2):
+        self.label_name = label_name
+        self.label_id = label_id
+        self.confidence = confidence
+        self.x1 = x1 #bounding box data
+        self.x2 = x2
+        self.y1 = y1
+        self.y2 = y2
         return
