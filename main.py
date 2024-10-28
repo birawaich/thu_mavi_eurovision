@@ -3,22 +3,26 @@ from queue import Queue
 
 from src.camera_capture import CameraSetup
 from src.camera_capture import capture_frames
-from src.camera_capture import get_frame_from_queue
 from src.frame_evaluation import evaluate_captured_frames
+from src.frame_container import FrameContainer
 
 def main():
     ### PARAMETERS ###
 
     keyword = "bottle"
-    """Keyword inputed by user = what robot needs to find"""
-
+    """Keyword inputed by user = what robot needs to find
+    
+    IMPORTANT needs to be a YOLO label"""
 
     ### SCRIPT ###
+
+    # set up search target
     print(f"Searching for '{keyword}'...")
+    FrameContainer.USER_KEYWORD = keyword
 
     # set up camera capturing
     window_name = "Raw Capturing"
-    camera_setup = CameraSetup(0,1) #capturing camera port 0 and camera port 1
+    camera_setup = CameraSetup(6,2) #capturing camera port 0 and camera port 1
     queue_frame_caputure = Queue(maxsize=2) #capturing to a queue of length 1 --> always most recent image (sometimes errors if it is empty)
     # set up matching
     queue_frame_distance = Queue(maxsize=5) #queue for frames that have distance information
@@ -32,7 +36,7 @@ def main():
     event_stop_evaluate = threading.Event()
     thread_evaluate = threading.Thread(
         target=evaluate_captured_frames,
-        args=(queue_frame_caputure,queue_frame_distance,event_stop_evaluate, keyword)
+        args=(queue_frame_caputure,queue_frame_distance,event_stop_evaluate)
     )
 
     # start threads
@@ -43,7 +47,7 @@ def main():
 
     # now can do stuff with the frames in the distance queue
     # (1) display
-    # (2) if have had high matching object with similar distance for a few frames --> call it the final candidate
+    # (2) if have had high matching object with similar distance for a few frames --> call it the final candidat
 
 if __name__ == "__main__":
     main()
