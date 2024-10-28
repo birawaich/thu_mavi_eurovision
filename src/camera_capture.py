@@ -4,7 +4,7 @@ from queue import Queue
 import datetime
 import warnings
 
-from src.frame_container import FrameContainer
+from .frame_container import FrameContainer
 
 class CameraSetup:
     """Class to hold the camera setup"""

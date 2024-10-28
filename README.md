@@ -23,6 +23,27 @@ source .venv/bin/activate
 pip install -r requirements.txt
 ```
 
+# Running Application
+
+Entry Point: `main.py`
+
+## Quick Description Source Files
+
+- `camera_capture.py` ... function and class to capture the images with the camera
+- `frame_evaluation.py` ... functions to evaluate the captured frames
+- `frame_container.py` ... class to store images, detected objects on them, depth map, ... with a timestamp
+
+## TODO
+
+- [ ] Better Camera Calibration
+- [ ] Better Depth Estimation
+- [ ] Better Depth Map
+- [ ] Use input arguments and sanity check them (only YOLO Parameters!)
+- [ ] Use matching queues to determine that truly found the object (might be a bit redundant)
+- [ ] Terminate Application in a proper way
+
+# Legacy
+
 ## Turtlebot setup
 
 See [TurtleBot Info](./turtlebot_info.md)
