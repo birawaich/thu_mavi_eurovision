@@ -32,12 +32,7 @@ def main():
     print(f"Searching for '{keyword}'...")
     FrameContainer.USER_KEYWORD = keyword
 
-<<<<<<< Updated upstream
     # set up camera capturingq
-=======
-    # set up camera capturing
-    window_name = "Raw Capturing"
->>>>>>> Stashed changes
     camera_setup = CameraSetup(0,2) #capturing camera port 0 and camera port 1
     queue_frame_caputure = Queue(maxsize=2) #capturing to a queue of length 1 --> always most recent image (sometimes errors if it is empty)
     # set up matching
@@ -70,7 +65,7 @@ def main():
     thread_navigation.start()
     print("Started navigation thread.")
 
-<<<<<<< Updated upstream
+
     # stop if key is pressed
     while not exit_program:
         # sleep a bit to be a bit more performant
@@ -96,11 +91,7 @@ def on_press(key):
             return False  # Stop the listener
     except AttributeError:
         pass  # Ignore other keys
-=======
-    # now can do stuff with the frames in the distance queue
-    # (1) display
-    # (2) if have had high matching object with similar distance for a few frames --> call it the final candidat
->>>>>>> Stashed changes
+
 
 if __name__ == "__main__":
     main()
