@@ -1,0 +1,3 @@
+[console_scripts]
+turtlebot4_python_move_node = turtlebot4_python_move.turtlebot4_python_move_node:main
+
