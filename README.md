@@ -27,20 +27,37 @@ pip install -r requirements.txt
 
 Entry Point: `main.py`
 
+Quick description: Navigate towards the object designated with `keyword` in `main.py`. If the object is not seen, it explores (no smart exploring i.e. no SLAM).
+
+Runs 3 Threads:
+
+- Capturing Images wiht both cameras and sending it to a pipe
+- Reading form that pipe, detect objects with YOLO, and if keyword is on the frame, estimate distance to option --> send result to a pipe
+- Navigate the robot towards the object by reading from the two pipes
+
 ## Quick Description Source Files
 
-- `camera_capture.py` ... function and class to capture the images with the camera
+- `camera_capture.py` ... function and class (`FrameContainer`) to capture the images with the camera
 - `frame_evaluation.py` ... functions to evaluate the captured frames
 - `frame_container.py` ... class to store images, detected objects on them, depth map, ... with a timestamp
+- `navigation.py` ... functions to run robot control loop
 
 ## TODO
 
-- [ ] Better Camera Calibration
-- [ ] Better Depth Estimation
-- [ ] Better Depth Map
-- [ ] Use input arguments and sanity check them (only YOLO Parameters!)
-- [ ] Use matching queues to determine that truly found the object (might be a bit redundant)
-- [ ] Terminate Application in a proper way
+- [ ] Obtain proper distance from dual camera  
+      Adjust the function `_estimate_distance()` and `evaluate_captured_frames()` to use the stereocamera properly
+- [ ] Include code to calibrate cameras (offline)
+- [ ] Implement functions needed in `navigation.py` (marked with `TODO`)  
+      - Get Distance to object  
+      - Get Angle/Heading to object  
+      - Get Distance to Environment
+      Can implement them as a function in the `FrameContainer` class.
+- [ ] Have interface to Robot itself --> Implement in `_move()` function in `navigation.py`  
+      Note: The idea is to call a ROS2 via the system. Also note the comment there.
+- [ ] Stop Turtlebot before object and give command to "environment" = user, to remove the object (to continue searching for next one)
+      Can work with events e.g. set the stop event for the navigation thread from main.
+- [ ] Prepare Slides to present
+- [ ] Update `requiremenets.txt`
 
 # Legacy
 
