@@ -32,14 +32,15 @@ class TurtleBot4FirstNode(Node):
     
     def button_2_function(self):
         #可以自行选择2号按键的回调函数
-        self.forward_callback(distance=0.5, speed=0.1)
-        self.rotate_callback(angle=90, speed=30)
-        self.forward_callback(distance=0.5, speed=0.1)
-        self.rotate_callback(angle=90, speed=30)
-        self.forward_callback(distance=0.5, speed=0.1)
-        self.rotate_callback(angle=90, speed=30)
-        self.forward_callback(distance=0.5, speed=0.1)
-        self.rotate_callback(angle=90, speed=30)
+        # self.forward_callback(distance=0.5, speed=0.1)
+        while True:
+            self.rotate_callback(angle=90, speed=30)
+        # self.forward_callback(distance=0.5, speed=0.1)
+        # self.rotate_callback(angle=90, speed=30)
+        # self.forward_callback(distance=0.5, speed=0.1)
+        # self.rotate_callback(angle=90, speed=30)
+        # self.forward_callback(distance=0.5, speed=0.1)
+        # self.rotate_callback(angle=90, speed=30)
     
     
     def rotate_callback(self,angle,speed):
@@ -87,7 +88,7 @@ class TurtleBot4FirstNode(Node):
 def main(args=None):
     rclpy.init(args=args)
     node = TurtleBot4FirstNode()
-    rclpy.spin(node)#开启节点
+    rclpy.spin(node)
     node.destroy_node()
     rclpy.shutdown()
 
