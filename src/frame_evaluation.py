@@ -92,6 +92,7 @@ def _detect_objects(container: FrameContainer, model: YOLO) -> FrameContainer:
 
 
 #improved estimate
+#still needs focal length and basline
 def _estimate_distance(container: FrameContainer, stereo_left: cv2.StereoBM, stereo_right: cv2.ximgproc) -> FrameContainer:
     """Estimates the distance to the best matched object in the frame container
     
