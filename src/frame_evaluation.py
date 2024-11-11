@@ -129,7 +129,7 @@ def _estimate_distance(container: FrameContainer, stereo_left: cv2.StereoBM, ste
         # take distance as distance to center #Improved?
         depth_map = cv2.reprojectImageTo3D(filtered_disp, Q)
         matching.distance_cm = depth_map[center_x,center_y,2]
-        # if above function does not work
+        # if above function does not work, use parameters that seem to work
         # matching.distance_cm = 10 * 50 / filtered_disp[center_x, center_y]  #adjust baseline, focal length
 
     time_end = time.time()
