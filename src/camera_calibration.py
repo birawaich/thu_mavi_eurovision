@@ -36,7 +36,7 @@ def undistort_image(left_image, right_image, image_size,
     rectified_left = cv2.remap(left_image, map1_left, map2_left, cv2.INTER_LINEAR)
     rectified_right = cv2.remap(right_image, map1_right, map2_right, cv2.INTER_LINEAR)
 
-    return rectified_left,rectified_right
+    return rectified_left,rectified_right, Q
 
 
 
