@@ -91,7 +91,8 @@ def _detect_objects(container: FrameContainer, model: YOLO) -> FrameContainer:
     return container
 
 
-def _estimate_distance(container: FrameContainer, stereo_matcher: cv2.StereoBM) -> FrameContainer:
+#improved estimate
+def _estimate_distance(container: FrameContainer, stereo_left: cv2.StereoBM, stereo_right: cv2.ximgproc) -> FrameContainer:
     """Estimates the distance to the best matched object in the frame container
     
     Directly modifies the Frame Container (returns same container)"""
@@ -102,19 +103,25 @@ def _estimate_distance(container: FrameContainer, stereo_matcher: cv2.StereoBM) 
     gray_right = cv2.cvtColor(container.frame_right, cv2.COLOR_BGR2GRAY)
 
     # Compute the depth map
-    disparity = stereo_matcher.compute(gray_left, gray_right).astype(np.float32) / 16.0
-    disparity[disparity == 0] = 0.1  # Avoid division by zero
+    disparity_left = stereo_left.compute(gray_left, gray_right).astype(np.float32) / 16.0
+    disparity_left[disparity_left == 0] = 0.1  # Avoid division by zero
+    disparity_right = stereo_right.compute(gray_right, gray_left).astype(np.float32) / 16.0
+    disparity_right[disparity_left == 0] = 0.1
 
-    # add depth map to frame
-    container.depthmap = cv2.normalize(disparity, None, 0, 255, cv2.NORM_MINMAX).astype(np.uint8)
+    # Apply WLS filter to improve disparity
+    wls_filter = cv2.ximgproc.createDisparityWLSFilter(stereo_left)
+    wls_filter.setLambda(1000)  # variable, can be adjusted
+    wls_filter.setSigmaColor(1.5)  # variable, can be adjusted
+    filtered_disp = wls_filter.filter(disparity_left, gray_left, disparity_map_right=disparity_right)
+    filtered_disp[filtered_disp <= 0] = 0.1
 
     # go through matchings and assign a distance
     for matching in container.matchings:
         # calculate center of box
         center_x, center_y = (matching.x1 + matching.x2) // 2,\
             (matching.y1 + matching.y2) // 2
-        # take distance as distance to center #TODO do this better
-        matching.distance_cm = disparity[center_y, center_x]  # Depth value at center
+        # take distance as distance to center #Improved?
+        matching.distance_cm = 10 * 50 / filtered_disp[center_x, center_y]  #adjust baseline, focal length
 
     time_end = time.time()
     print(f"[Distance Estimation] Execution time:\t{time_end - time_start:.6f} s")
