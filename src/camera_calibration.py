@@ -15,7 +15,16 @@ def load_calibration(file_path):
     T = np.array(calibration_data["T"]) #translation matrix
     return K, d, R, T
 
-def undistort_image(left_image, right_image, calibrate_left:yaml, calibrate_right:yaml, image_size):
+
+def undistort_image(left_image, right_image, image_size,
+                    calibrate_left:yaml = (np.eye(3, dtype=float),
+                                           np.ones(5, dtype=float),
+                                           np.eye(3, dtype=float),
+                                           np.array([[0.1], [0.0], [0.0]], dtype=np.float32)),
+                    calibrate_right:yaml= (np.eye(3, dtype=float),
+                                           np.ones(5, dtype=float),
+                                           np.eye(3, dtype=float),
+                                           np.array([[0.1], [0.0], [0.0]], dtype=np.float32))):
     K1, d1, R1, T1 = load_calibration(calibrate_left)
     K2, d2, R2, T2 = load_calibration(calibrate_right)
     R1, R2, P1, P2, Q, _, _ = cv2.stereoRectify(K1, d1, K2, d2, image_size, R1, T1)
