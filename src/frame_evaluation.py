@@ -4,10 +4,12 @@ from queue import Queue
 import numpy as np
 from ultralytics import YOLO
 import threading
+import yaml #added to import offline parameters
 
 from .camera_capture import get_frame_from_queue
 from .frame_container import FrameContainer
 from .frame_container import DetectedObject
+from .camera_calibration import undistort_image
 
 def evaluate_captured_frames(queue_captured: Queue, #src queue
                              queue_distance: Queue, #destination queue
@@ -23,7 +25,8 @@ def evaluate_captured_frames(queue_captured: Queue, #src queue
 
     # Initialize a StereoBM matcher
     print("Creating a StereoBM matcher...")
-    stereo_matcher = cv2.StereoBM_create(numDisparities=16*6, blockSize=15)
+    stereo_left = cv2.StereoBM_create(numDisparities=16, blockSize=15)
+    stereo_right = cv2.ximgproc.createRightMatcher(stereo_left)
     print("\rDone.")
     
 
@@ -46,9 +49,10 @@ def evaluate_captured_frames(queue_captured: Queue, #src queue
         # if above certain threshold, do evaluate distance and put into closer choice queue
         if len(frame_container.matchings) != 0:
             # calculate distance
-            frame_container = _estimate_distance(frame_container, stereo_matcher)
+            # added second parameter
+            frame_container = _estimate_distance(frame_container, stereo_left, stereo_right)
 
-            # put these frames into a queueq
+            # put these frames into a queue
             if queue_distance.full():
                 queue_distance.get()
             queue_distance.put(frame_container)
@@ -91,17 +95,18 @@ def _detect_objects(container: FrameContainer, model: YOLO) -> FrameContainer:
     return container
 
 
-#improved estimate
+#improved estimate by adding a second matcher
 #still needs focal length and basline
 def _estimate_distance(container: FrameContainer, stereo_left: cv2.StereoBM, stereo_right: cv2.ximgproc) -> FrameContainer:
     """Estimates the distance to the best matched object in the frame container
     
     Directly modifies the Frame Container (returns same container)"""
     time_start = time.time()
+    frame_left, frame_right, Q = undistort_image(container.frame_left, container.frame_right, image_size= (640,960))
 
     # Convert frames to grayscale for depth map calculation
-    gray_left = cv2.cvtColor(container.frame_left, cv2.COLOR_BGR2GRAY)
-    gray_right = cv2.cvtColor(container.frame_right, cv2.COLOR_BGR2GRAY)
+    gray_left = cv2.cvtColor(frame_left, cv2.COLOR_BGR2GRAY)
+    gray_right = cv2.cvtColor(frame_right, cv2.COLOR_BGR2GRAY)
 
     # Compute the depth map
     disparity_left = stereo_left.compute(gray_left, gray_right).astype(np.float32) / 16.0
@@ -122,7 +127,10 @@ def _estimate_distance(container: FrameContainer, stereo_left: cv2.StereoBM, ste
         center_x, center_y = (matching.x1 + matching.x2) // 2,\
             (matching.y1 + matching.y2) // 2
         # take distance as distance to center #Improved?
-        matching.distance_cm = 10 * 50 / filtered_disp[center_x, center_y]  #adjust baseline, focal length
+        depth_map = cv2.reprojectImageTo3D(filtered_disp, Q)
+        matching.distance_cm = depth_map[center_x,center_y,2]
+        # if above function does not work
+        # matching.distance_cm = 10 * 50 / filtered_disp[center_x, center_y]  #adjust baseline, focal length
 
     time_end = time.time()
     print(f"[Distance Estimation] Execution time:\t{time_end - time_start:.6f} s")
