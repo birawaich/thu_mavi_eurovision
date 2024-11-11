@@ -13,7 +13,7 @@ def load_calibration(file_path):
     d = np.array(calibration_data["D"]) #distortion parameters
     R = np.array(calibration_data["R"]) #rotation matrix
     T = np.array(calibration_data["T"]) #translation matrix
-    return (K, d, R, T)
+    return K, d, R, T
 
 def undistort_image(left_image, right_image, calibrate_left:yaml, calibrate_right:yaml, image_size):
     K1, d1, R1, T1 = load_calibration(calibrate_left)
