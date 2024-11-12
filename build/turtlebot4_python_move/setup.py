@@ -1,1 +1,0 @@
-/home/ubuntu/thu_mavi_eurovision/turtlebot4_python_move/setup.py
