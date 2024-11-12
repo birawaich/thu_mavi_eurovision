@@ -13,20 +13,19 @@ def load_calibration(file_path):
     D = np.array(calibration_data["D"])
     R = np.array(calibration_data["R"])
     T = np.array(calibration_data["T"])
-    P = np.array(calibration_data["P"])
-    return K, D, R, T,P
+    return K, D, R, T
 
 # Load calibration files for left and right cameras
-K1, D1, R1, T1, P1 = load_calibration('camera_1_extrinsics.yaml')
-K2, D2, R2, T2, P2 = load_calibration('camera_2_extrinsics.yaml')
+K1, D1, R1, T1= load_calibration('camera_1_extrinsics.yaml')
+K2, D2, R2, T2= load_calibration('camera_2_extrinsics.yaml')
 
 # Initialize the YOLO model
-model = YOLO('yolov10n.pt')  # Load YOLOv8 model
+model = YOLO('yolov8n.pt')  # Load YOLOv8 model
 
 # Open the two USB cameras, change if necessary
-cap_left = cv2.VideoCapture(0)
-phone_camera_url = "http://192.168.31.152:4747/video"
-cap_right = cv2.VideoCapture(phone_camera_url)
+cap_left = cv2.VideoCapture(2)
+phone_camera_url = "http://192.168.31.214:4747/video"
+cap_right = cv2.VideoCapture(3)
 
 # Check if both cameras are accessible
 if not cap_left.isOpened() or not cap_right.isOpened():
@@ -72,23 +71,24 @@ try:
         disparity_left = stereo_left.compute(gray_left, gray_right).astype(np.float32) / 16.0
         disparity_left[disparity_left == 0] = 0.1  # Avoid division by zero
         disparity_right = stereo_right.compute(gray_right, gray_left).astype(np.float32) / 16.0
+        disparity_right[disparity_right == 0] = 0.1  # Avoid division by zero
 
         # Apply WLS filter to improve disparity
         wls_filter = cv2.ximgproc.createDisparityWLSFilter(stereo_left)
         wls_filter.setLambda(1000)
         wls_filter.setSigmaColor(1.5)
         filtered_disp = wls_filter.filter(disparity_left, gray_left, disparity_map_right=disparity_right)
-        filtered_disp[filtered_disp <= 0] = 0.1
+        filtered_disp[filtered_disp == 0] = 0.1
         filtered_disp_normalized = cv2.normalize(filtered_disp, None, 0, 255, cv2.NORM_MINMAX).astype(np.uint8)
 
         # Compute depth map using Q matrix
-        depth_map = cv2.reprojectImageTo3D(filtered_disp, Q)
-        depth_map_normalized = cv2.normalize(depth_map[:, :, 2], None, 0, 255, cv2.NORM_MINMAX).astype(np.uint8)
+        #depth_map = cv2.reprojectImageTo3D(filtered_disp, Q)q
+        #depth_map_normalized = cv2.normalize(depth_map[:, :, 2], None, 0, 255, cv2.NORM_MINMAX).astype(np.uint8)
         depth_map2= 10*50/filtered_disp
-        depth_map_normalized2 = cv2.normalize(depth_map2, None, 0, 255, cv2.NORM_MINMAX).astype(np.uint8)
+        #depth_map_normalized2 = cv2.normalize(depth_map2, None, 0, 255, cv2.NORM_MINMAX).astype(np.uint8)
         # Display depth map as color map
         #depth_colormap = cv2.applyColorMap(depth_map_normalized, cv2.COLORMAP_JET)
-        cv2.imshow('Depth Map', depth_map_normalized)
+        cv2.imshow('Depth Map', filtered_disp_normalized)
 
         # Process YOLO detection on left frame every 5 seconds
         current_time = time.time()
@@ -99,12 +99,13 @@ try:
                 x1, y1, x2, y2 = map(int, box.xyxy[0])
                 label = model.names[int(box.cls[0])]
                 conf = box.conf[0]
-                center_x, center_y = (x1 + x2) // 2, (y1 + y2) // 2
-                distance2= 10*50/filtered_disp[center_x,center_y]
-                distance = depth_map[center_x, center_y, 2]  # Depth at the center
-                cv2.rectangle(rectified_left, (x1, y1), (x2, y2), (0, 255, 0), 2)
-                text = f"{label} {conf:.2f} {distance2:.2f} cm"
-                cv2.putText(rectified_left, text, (x1, y1 - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 2)
+                # Only proceed if the detected label is "bottle"
+                if label == "bottle":
+                    center_x, center_y = (x1 + x2) // 2, (y1 + y2) // 2
+                    distance = depth_map2[center_x, center_y]  # Depth at the center
+                    cv2.rectangle(rectified_left, (x1, y1), (x2, y2), (0, 255, 0), 2)
+                    text = f"{label} {conf:.2f} {distance:.2f} cm"
+                    cv2.putText(rectified_left, text, (x1, y1 - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 2)
 
             cv2.imshow('Left Camera with YOLO Detections', rectified_left)
             last_capture_time = current_time
