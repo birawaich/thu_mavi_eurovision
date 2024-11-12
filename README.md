@@ -27,7 +27,9 @@ pip install -r requirements.txt
 
 Entry Point: `main.py`
 
-Quick description: Navigate towards the object designated with `keyword` in `main.py`. If the object is not seen, it explores (no smart exploring i.e. no SLAM).
+Quick description: Navigate towards the object designated with `keyword` in `main.py`.
+Set to **bottle** by default.
+If the object is not seen, it explores (no smart exploring i.e. no SLAM).
 
 Runs 3 Threads:
 
@@ -41,29 +43,21 @@ Runs 3 Threads:
 - `frame_evaluation.py` ... functions to evaluate the captured frames
 - `frame_container.py` ... class to store images, detected objects on them, depth map, ... with a timestamp
 - `navigation.py` ... functions to run robot control loop
+- `camera_#_extrinsics.yaml` ... camera calibration parameters
 
-## TODO
+## Other Files
 
-- [ ] Obtain proper distance from dual camera  
-      Adjust the function `_estimate_distance()` and `evaluate_captured_frames()` to use the stereocamera properly
-- [ ] Include code to calibrate cameras (offline)
-- [ ] Implement functions needed in `navigation.py` (marked with `TODO`)  
-      - Get Distance to object  
-      - Get Angle/Heading to object  
-      - Get Distance to Environment
-      Can implement them as a function in the `FrameContainer` class.
-- [ ] Have interface to Robot itself --> Implement in `_move()` function in `navigation.py`  
-      Note: The idea is to call a ROS2 via the system. Also note the comment there.
-- [ ] Stop Turtlebot before object and give command to "environment" = user, to remove the object (to continue searching for next one)
-      Can work with events e.g. set the stop event for the navigation thread from main.
-- [ ] Prepare Slides to present
-- [ ] Update `requiremenets.txt`
+Various other files are around, those were used during development by the various people.
 
 # Legacy
 
+Ideally, this code drives a Turtlebot. However, due to an odysee of errors, this never worked reliably. See below for some information.
+
 ## Turtlebot setup
 
-See [TurtleBot Info](./turtlebot_info.md)
+See [TurtleBot Info](./turtlebot_info.md).
+
+Also see [some notes](./progress.md).
 
 
 ## Yolo V10 setup
