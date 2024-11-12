@@ -21,7 +21,7 @@ class FrameContainer:
         self.detected_objects: List[DetectedObject] = [] #list of the detected objects
         self.matchings: List[DetectedObject] = [] #list of the detected objects which are matchings
 
-        self.depthmap: cv2.Mat = None #depth map
+        self.depthmap: cv2.Mat = None #depth map, 2D
         return
 
     def get_raw_info_frame(self) -> cv2.Mat:
@@ -126,6 +126,17 @@ class FrameContainer:
             self.matchings.append(detected_object)
 
         return
+    
+    def get_normalized_depth_map(self):
+        """
+        Returns the depth map s.t. it can be plotted with cv2.imshow
+        """
+        # Normalize the depth map to the range 0-255
+        depth_map_normalized = cv2.normalize(self.depthmap
+                                             , None, 0, 255, cv2.NORM_MINMAX)
+        
+        # Convert to an unsigned 8-bit integer format
+        return depth_map_normalized.astype(np.uint8)
 
 class DetectedObject:
     """Class Representing a detected object"""
