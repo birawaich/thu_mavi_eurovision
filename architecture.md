@@ -112,3 +112,8 @@ Key Idea: Giving user some way to input data and see status/results
 - Note
     - can be a simple shell cf. [cmd shell](https://docs.python.org/3/library/cmd.html)
     - adding some visualization from rviz would be cool
+
+
+## Camera Calibration
+1. 3D-triangulation Method using DLT: https://www.ipb.uni-bonn.de/html/teaching/msr2-2020/sse2-13-DLT.pdf
+
