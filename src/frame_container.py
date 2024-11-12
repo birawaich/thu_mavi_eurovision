@@ -7,7 +7,7 @@ from typing import List
 class FrameContainer:
     """Class to hold captured frames and their corresponding infos"""
 
-    THRESHOLD_CONFIDENCE = 0.69
+    THRESHOLD_CONFIDENCE = 0.42
     """Confidence threshold s.t. a matching is regarded as significant"""
 
     USER_KEYWORD = ''
@@ -141,6 +141,9 @@ class FrameContainer:
 class DetectedObject:
     """Class Representing a detected object"""
 
+    width_frame: int = 480
+    """Width of the frame of the matching"""
+
     def __init__(self,
                  label_name: str,
                  label_id: int,
@@ -158,3 +161,21 @@ class DetectedObject:
         self.y2 = y2
         self.distance_cm = None #distance to object in cm
         return
+    
+    def get_rotation(self) -> float:
+        """return roation (around vertical axis) from camera to object in deg"""
+        if self.distance_cm  is None:
+            print("Warning: Cannot calucalte rotation if distance is unknown. Returning 0.")
+            return 0.0
+
+        offset_to_midpoint_pxl = self.width_frame/2 - (self.x1+self.x2)/2 #pixel
+        
+        # calculate this distance in cm
+        offset_to_midpoint = offset_to_midpoint_pxl * self.distance_cm * 1/1337
+        """note: this is roughly linear, with the farhter away, the more cm per pixel
+
+        this formula was guessed late at night by somebody on vacation that does not have
+        access to the cameras.
+        """
+
+        return np.tan(offset_to_midpoint/self.distance_cm) *360.0/(2*np.pi)

@@ -4,6 +4,7 @@ import warnings
 import time
 
 from src.frame_container import FrameContainer
+from src.frame_container import DetectedObject
 
 def navigate(queue_distance: Queue,#destination queue
              queue_captured: Queue,
@@ -31,10 +32,11 @@ def navigate(queue_distance: Queue,#destination queue
         if not queue_distance.empty():
             # if have matching in quueue, navigate according to that
 
-            # TODO extract distance of matching
-            distance_object = 4.2
-            # TODO extract heading from bounding box
-            rotation = 6.9
+            container: FrameContainer = queue_distance.get()
+            matching: DetectedObject = container.matchings[0] #just take first matching, ignore cases of multiple matchings
+            # extract distance of matching
+            distance_object = matching.distance_cm / 100 #convert to m
+            rotation = matching.get_rotation()
             _move(distane_m=_revise_distance(distance_object),
                  rotation_deg=_revise_rotation(rotation))
 
@@ -90,9 +92,10 @@ def _revise_rotation(rotation_raw: float) -> float:
     ### PARAMETER
 
     rotation_max_move = 30 #maximal rotation the robot is allowed to move in one step [deg]
+    rotation_min_move = -30 #maximal rotation the robot is allowed to move in one step [deg]
 
     ### CODE
-    result = min(rotation_max_move,rotation_raw)
+    result = max(rotation_min_move,min(rotation_max_move,rotation_raw))
 
     return result
 
@@ -101,7 +104,7 @@ def _move(distane_m: float,
          rotation_deg: float):
     """Function to move the robot according to distance and rotation"""
 
-    print(f">> MOVE el turtoichrot by {distane_m:3}m and {rotation_deg:1}deg")
+    print(f">> MOVE el tortoise by {distane_m:>3.1f}m and {rotation_deg:>3.1f}deg")
 
     time.sleep(0.69)
     """

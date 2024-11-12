@@ -5,6 +5,7 @@ import numpy as np
 from ultralytics import YOLO
 import threading
 import yaml #added to import offline parameters
+import warnings
 
 from .camera_capture import get_frame_from_queue
 from .frame_container import FrameContainer
@@ -108,7 +109,7 @@ def _detect_objects(container: FrameContainer, model: YOLO) -> FrameContainer:
         )
 
     time_end = time.time()
-    print(f"[Object Detection] Execution time:\t{time_end - time_start:.6f} s")
+    # print(f"[Object Detection] Execution time:\t{time_end - time_start:.6f} s")
     return container
 
 
@@ -130,16 +131,16 @@ def _estimate_distance(container: FrameContainer,
     frame_left_is_empty = (container.frame_left is None)
     frame_right_is_empty = (container.frame_right is None)
     if frame_left_is_empty and frame_right_is_empty:
-        print("Warning: Cannot estimate distance without images, will not do anything...")
+        warnings.warn("Warning: Cannot estimate distance without images, will not do anything...")
         return container
     if frame_left_is_empty:
         frame_right = container.frame_right
         frame_left = frame_right
-        print("Warning: Left Frame was not captured, using right for both.")
+        warnings.warn("Warning: Left Frame was not captured, using right for both.")
     elif frame_right_is_empty:
         frame_left = container.frame_left
         frame_right = frame_left
-        print("Warning: Right Frame was not captured, using left for both.")
+        warnings.warn("Warning: Right Frame was not captured, using left for both.")
     else:
         frame_left = container.frame_left
         frame_right = container.frame_right
@@ -177,7 +178,7 @@ def _estimate_distance(container: FrameContainer,
         matching.distance_cm = container.depthmap[center_x,center_y]
 
     time_end = time.time()
-    print(f"[Distance Estimation] Execution time:\t{time_end - time_start:.6f} s")
+    # print(f"[Distance Estimation] Execution time:\t{time_end - time_start:.6f} s")
     return container
 
 def _load_calibration(file_path):

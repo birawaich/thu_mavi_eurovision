@@ -36,7 +36,7 @@ def main():
     camera_setup = CameraSetup(0,2) #capturing camera port 0 and camera port 1
     queue_frame_caputure = Queue(maxsize=2) #capturing to a queue of length 1 --> always most recent image (sometimes errors if it is empty)
     # set up matching
-    queue_frame_distance = Queue(maxsize=5) #queue for frames that have distance information
+    queue_frame_distance = Queue(maxsize=2) #queue for frames that have distance information
 
     # set up threads
     event_stop_capture = threading.Event()
