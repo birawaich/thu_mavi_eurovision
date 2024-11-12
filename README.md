@@ -45,9 +45,16 @@ Runs 3 Threads:
 - `navigation.py` ... functions to run robot control loop
 - `camera_#_extrinsics.yaml` ... camera calibration parameters
 
-## Other Files
+## Camera Calibration
 
-Various other files are around, those were used during development by the various people.
+Files used for camera calibration can be found in `camera-calib/`. It is taken from [this blog post](https://github.com/TemugeB/python_stereo_camera_calibrate).
+
+## Other Folders
+
+- `camera_mount/` ... contains the CAD files for the camera mount
+- `camera_parameters/` ... the extracted camera parameters and an (unused) class on how to get them
+- `*test` ... was some test code that was used along the way
+- `*.ipynb` ... as above, some Jupyther Notebooks
 
 # Legacy
 
