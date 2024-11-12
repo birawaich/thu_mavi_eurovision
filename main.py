@@ -65,6 +65,7 @@ def main():
     thread_navigation.start()
     print("Started navigation thread.")
 
+
     # stop if key is pressed
     while not exit_program:
         # sleep a bit to be a bit more performant
@@ -90,6 +91,7 @@ def on_press(key):
             return False  # Stop the listener
     except AttributeError:
         pass  # Ignore other keys
+
 
 if __name__ == "__main__":
     main()

@@ -5,6 +5,7 @@ import numpy as np
 from ultralytics import YOLO
 import threading
 import yaml #added to import offline parameters
+import os #TODO check if really needed
 
 from .camera_capture import get_frame_from_queue
 from .frame_container import FrameContainer

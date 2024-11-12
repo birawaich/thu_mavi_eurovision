@@ -5,3 +5,8 @@ venv/
 *.pt
 .vscode/
 scratch/
+
+#ROS Stuff
+install/
+log/
+build/
