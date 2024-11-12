@@ -21,7 +21,7 @@ class FrameContainer:
         self.detected_objects: List[DetectedObject] = [] #list of the detected objects
         self.matchings: List[DetectedObject] = [] #list of the detected objects which are matchings
 
-        self.depthmap: cv2.Mat = None #depth map, 2D
+        self.depthmap: cv2.Mat = None #depth map, 2D in cm
         return
 
     def get_raw_info_frame(self) -> cv2.Mat:
@@ -137,6 +137,18 @@ class FrameContainer:
         
         # Convert to an unsigned 8-bit integer format
         return depth_map_normalized.astype(np.uint8)
+    
+    def get_distance_env(self) -> float:
+        """get an approximate distance of the environment in cm
+        
+        simply slices out a strip of the image (in the center, as there is hopefully
+        no floor there) and returns the minimum"""
+
+        if self.depthmap  is None:
+            print("Warning: Cannot calucalte distance to env if depthmap is unknown. Returning 1m.")
+            return 100.0
+
+        return min(abs(self.depthmap[int(self.depthmap.shape[0] / 2),:]))
 
 class DetectedObject:
     """Class Representing a detected object"""

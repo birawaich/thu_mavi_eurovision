@@ -11,6 +11,28 @@ from .camera_capture import get_frame_from_queue
 from .frame_container import FrameContainer
 from .frame_container import DetectedObject
 
+class DualCameraWielder:
+    """Class to hold the parameters etc. to wield the dual cameras
+    i.e. rectification and stereo matching"""
+
+    def __init__(self):
+        print("Setting up Dual Camera Wielder....")
+        #Load Parameters
+        K1, D1, R1, T1= _load_calibration('src/camera_1_extrinsics.yaml')
+        K2, D2, R2, T2= _load_calibration('src/camera_2_extrinsics.yaml')
+        image_size = (640, 600)  # Adjust based on your camera setup --> while not correct values, worked best in practice
+        R, T = R2, T2  # Use extrinsic parameters for stereo
+        R1, R2, P1, P2, Q, _, _ = cv2.stereoRectify(K1, D1, K2, D2, image_size, R, T)
+        # Undistortion and rectification map
+        self.map1_left, self.map2_left = cv2.initUndistortRectifyMap(K1, D1, R1, P1, image_size, cv2.CV_32FC1)
+        self.map1_right, self.map2_right = cv2.initUndistortRectifyMap(K2, D2, R2, P2, image_size, cv2.CV_32FC1)
+
+        # Initialize a StereoBM matcher
+        self.stereo_left = cv2.StereoBM_create(numDisparities=16, blockSize=15)
+        self.stereo_right = cv2.ximgproc.createRightMatcher(self.stereo_left)
+        print("\rDone.")
+        return
+
 def evaluate_captured_frames(queue_captured: Queue, #src queue
                              queue_distance: Queue, #destination queue
                              event_stop: threading.Event):
@@ -26,25 +48,8 @@ def evaluate_captured_frames(queue_captured: Queue, #src queue
     model = YOLO('yolov8n.pt')  # Load YOLOv8 model
     print("\rDone.")
 
-    # Initialize Rectification
-    print("Preparing Image Rectification Parameters....")
-    #Load Parameters
-    K1, D1, R1, T1= _load_calibration('src/camera_1_extrinsics.yaml')
-    K2, D2, R2, T2= _load_calibration('src/camera_2_extrinsics.yaml')
-    image_size = (640, 600)  # Adjust based on your camera setup --> while not correct values, worked best in practice
-    R, T = R2, T2  # Use extrinsic parameters for stereo
-    R1, R2, P1, P2, Q, _, _ = cv2.stereoRectify(K1, D1, K2, D2, image_size, R, T)
-    # Undistortion and rectification map
-    map1_left, map2_left = cv2.initUndistortRectifyMap(K1, D1, R1, P1, image_size, cv2.CV_32FC1)
-    map1_right, map2_right = cv2.initUndistortRectifyMap(K2, D2, R2, P2, image_size, cv2.CV_32FC1)
-    print("\rDone.")
-
-    # Initialize a StereoBM matcher
-    print("Creating a StereoBM matcher...")
-    stereo_left = cv2.StereoBM_create(numDisparities=16, blockSize=15)
-    stereo_right = cv2.ximgproc.createRightMatcher(stereo_left)
-    print("\rDone.")
-    
+    # Initialize stuff for dual camera wielding
+    dcw: DualCameraWielder = DualCameraWielder()
 
     while not event_stop.is_set():
         # load latest from queue
@@ -66,9 +71,8 @@ def evaluate_captured_frames(queue_captured: Queue, #src queue
         if len(frame_container.matchings) != 0:
             # calculate distance
             # added second parameter
-            frame_container = _estimate_distance(frame_container, stereo_left, stereo_right,
-                                                 map1_left=map1_left, map1_right=map1_right,
-                                                 map2_left=map2_left, map2_right=map2_right)
+            frame_container = _estimate_distance(frame_container,
+                                                 dcw)
 
             # put these frames into a queue
             if queue_distance.full():
@@ -112,22 +116,38 @@ def _detect_objects(container: FrameContainer, model: YOLO) -> FrameContainer:
     # print(f"[Object Detection] Execution time:\t{time_end - time_start:.6f} s")
     return container
 
-
 #improved estimate by adding a second matcher
 #still needs focal length and basline
 def _estimate_distance(container: FrameContainer,
-                       stereo_left: cv2.StereoBM,
-                       stereo_right: cv2.StereoBM,
-                       map1_left, map1_right, #maps for rectification
-                       map2_left, map2_right) -> FrameContainer:
+                       dcw: DualCameraWielder) -> FrameContainer:
     """Estimates the distance to the best matched object in the frame container
-
-
     
     Directly modifies the Frame Container (returns same container)"""
     time_start = time.time()
 
-    # Load Frames, if one is none, use other.
+    container = create_depth_map(container=container
+                      ,dcw=dcw)
+
+    # go through matchings and assign a distance
+    for matching in container.matchings:
+        # calculate center of box
+        center_x, center_y = (matching.x1 + matching.x2) // 2,\
+            (matching.y1 + matching.y2) // 2
+        # take distance as distance to center
+        matching.distance_cm = container.depthmap[center_x,center_y]
+
+    time_end = time.time()
+    # print(f"[Distance Estimation] Execution time:\t{time_end - time_start:.6f} s")
+    return container
+
+def create_depth_map(container: FrameContainer,
+                     dcw: DualCameraWielder) -> FrameContainer:
+    """creates a depth map
+    
+    Directly modifies the Frame Container (returns same container
+    """
+
+     # Load Frames, if one is none, use other.
     frame_left_is_empty = (container.frame_left is None)
     frame_right_is_empty = (container.frame_right is None)
     if frame_left_is_empty and frame_right_is_empty:
@@ -146,39 +166,36 @@ def _estimate_distance(container: FrameContainer,
         frame_right = container.frame_right
 
     # Rectify and undistort frames
-    rectified_left = cv2.remap(frame_left, map1_left, map2_left, cv2.INTER_LINEAR)
-    rectified_right = cv2.remap(frame_right, map1_right, map2_right, cv2.INTER_LINEAR)
+    rectified_left = cv2.remap(frame_left, dcw.map1_left, dcw.map2_left
+                               , cv2.INTER_LINEAR)
+    rectified_right = cv2.remap(frame_right, dcw.map1_right, dcw.map2_right
+                                , cv2.INTER_LINEAR)
 
     # Convert frames to grayscale for depth map calculation
     gray_left = cv2.cvtColor(rectified_left, cv2.COLOR_BGR2GRAY)
     gray_right = cv2.cvtColor(rectified_right, cv2.COLOR_BGR2GRAY)
 
     # Compute disparity map
-    disparity_left = stereo_left.compute(gray_left, gray_right).astype(np.float32) / 16.0
+    disparity_left = dcw.stereo_left\
+        .compute(gray_left, gray_right)\
+        .astype(np.float32) / 16.0
     disparity_left[disparity_left == 0] = 0.1  # Avoid division by zero
-    disparity_right = stereo_right.compute(gray_right, gray_left).astype(np.float32) / 16.0
+    disparity_right = dcw.stereo_right\
+        .compute(gray_right, gray_left)\
+            .astype(np.float32) / 16.0
     disparity_right[disparity_right == 0] = 0.1  # Avoid division by zero
 
     # Apply WLS filter to improve disparity
-    wls_filter = cv2.ximgproc.createDisparityWLSFilter(stereo_left)
+    wls_filter = cv2.ximgproc.createDisparityWLSFilter(dcw.stereo_left)
     wls_filter.setLambda(1000)
     wls_filter.setSigmaColor(1.5)
-    filtered_disp = wls_filter.filter(disparity_left, gray_left, disparity_map_right=disparity_right)
+    filtered_disp = wls_filter.filter(disparity_left, gray_left
+                                      , disparity_map_right=disparity_right)
     filtered_disp[filtered_disp == 0] = 0.1
 
     #depth map --> store in container
     container.depthmap = 10*50/filtered_disp #values should be focal length and baseline, this experimentally worked best
 
-    # go through matchings and assign a distance
-    for matching in container.matchings:
-        # calculate center of box
-        center_x, center_y = (matching.x1 + matching.x2) // 2,\
-            (matching.y1 + matching.y2) // 2
-        # take distance as distance to center
-        matching.distance_cm = container.depthmap[center_x,center_y]
-
-    time_end = time.time()
-    # print(f"[Distance Estimation] Execution time:\t{time_end - time_start:.6f} s")
     return container
 
 def _load_calibration(file_path):

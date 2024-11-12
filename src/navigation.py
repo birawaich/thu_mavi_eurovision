@@ -5,6 +5,8 @@ import time
 
 from src.frame_container import FrameContainer
 from src.frame_container import DetectedObject
+from src.frame_evaluation import DualCameraWielder
+from src.frame_evaluation import create_depth_map
 
 def navigate(queue_distance: Queue,#destination queue
              queue_captured: Queue,
@@ -25,6 +27,9 @@ def navigate(queue_distance: Queue,#destination queue
         "Bro, read the comments before setting parameters!"
 
     ### CONTROL LOOP
+
+    # setup
+    dcw = DualCameraWielder()
 
     # control loop based on queues
     while not event_stop.is_set():
@@ -52,8 +57,9 @@ def navigate(queue_distance: Queue,#destination queue
         # go exploring
         container: FrameContainer = queue_captured.get()
 
-        # TODO extract distance of sourinding objects
-        distance_env = 0.42
+        # extract distance of sourinding objects
+        container = create_depth_map(container=container, dcw=dcw) # estimate depth map first
+        distance_env = container.get_distance_env() / 100 #convert to m
 
         if distance_env < distance_env_way_too_close:
             #if way too close: back up
@@ -106,7 +112,7 @@ def _move(distane_m: float,
 
     print(f">> MOVE el tortoise by {distane_m:>3.1f}m and {rotation_deg:>3.1f}deg")
 
-    time.sleep(0.69)
+    time.sleep(1.337)
     """
     Why sleep here?
 
