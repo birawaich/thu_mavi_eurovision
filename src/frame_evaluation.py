@@ -121,6 +121,7 @@ def _estimate_distance(container: FrameContainer, stereo_left: cv2.StereoBM, ste
     filtered_disp = wls_filter.filter(disparity_left, gray_left, disparity_map_right=disparity_right)
     filtered_disp[filtered_disp <= 0] = 0.1
 
+    #depth map
     depth_map = cv2.reprojectImageTo3D(filtered_disp, Q)
 
     # go through matchings and assign a distance
