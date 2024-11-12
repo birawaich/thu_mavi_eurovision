@@ -121,13 +121,14 @@ def _estimate_distance(container: FrameContainer, stereo_left: cv2.StereoBM, ste
     filtered_disp = wls_filter.filter(disparity_left, gray_left, disparity_map_right=disparity_right)
     filtered_disp[filtered_disp <= 0] = 0.1
 
+    depth_map = cv2.reprojectImageTo3D(filtered_disp, Q)
+
     # go through matchings and assign a distance
     for matching in container.matchings:
         # calculate center of box
         center_x, center_y = (matching.x1 + matching.x2) // 2,\
             (matching.y1 + matching.y2) // 2
         # take distance as distance to center #Improved?
-        depth_map = cv2.reprojectImageTo3D(filtered_disp, Q)
         matching.distance_cm = depth_map[center_x,center_y,2]
         # if above function does not work, use parameters that seem to work
         # matching.distance_cm = 10 * 50 / filtered_disp[center_x, center_y]  #adjust baseline, focal length
