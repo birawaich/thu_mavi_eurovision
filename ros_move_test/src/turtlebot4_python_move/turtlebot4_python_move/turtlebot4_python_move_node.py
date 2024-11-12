@@ -5,7 +5,7 @@ from rclpy.node import Node
 from rclpy.qos import qos_profile_sensor_data
 import math
 import time
-
+from src.camera_capture import CameraSetup, capture_frames
 
 class TurtleBot4FirstNode(Node):
 
@@ -35,13 +35,14 @@ class TurtleBot4FirstNode(Node):
         # self.forward_callback(distance=0.5, speed=0.1)
         while True:
             self.rotate_callback(angle=90, speed=30)
+            self.forward_callback(distance=0.1, speed=0.1)
         # self.forward_callback(distance=0.5, speed=0.1)
         # self.rotate_callback(angle=90, speed=30)
         # self.forward_callback(distance=0.5, speed=0.1)
         # self.rotate_callback(angle=90, speed=30)
         # self.forward_callback(distance=0.5, speed=0.1)
         # self.rotate_callback(angle=90, speed=30)
-    
+
     
     def rotate_callback(self,angle,speed):
         #angle为旋转角度，单位度；speed为旋转角速度，单位度/s，正负对应不同旋转方向
